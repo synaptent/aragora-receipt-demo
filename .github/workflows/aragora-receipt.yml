@@ -34,6 +34,7 @@ jobs:
           post-comment: 'true'
           emit-receipt: 'true'
           receipt-reviewers: 'claude openai'
+          odr-signing-key: ${{ secrets.ARAGORA_ODR_SIGNING_KEY }}
 
       - name: Fail if no receipt was produced
         if: steps.review.outputs.receipt-verified != 'true'
@@ -52,16 +53,17 @@ jobs:
           RECEIPT_PATH: ${{ steps.review.outputs.receipt-path }}
         run: |
           python3 -m pip install --quiet "aragora-verify>=0.2.0"
-          aragora-verify "$RECEIPT_PATH"
+          # Checked against the public key committed in this repository, so any
+          # edit to the receipt fails the signature check.
+          aragora-verify "$RECEIPT_PATH" --pubkey odr-signing-key.pub.pem
 
-      # These demo receipts are unsigned, so a recomputed digest alone cannot
-      # show that a downloaded copy is unaltered. Record the digest in the
-      # GitHub-hosted run summary at emission time so anyone can compare it
-      # with the odr_digest that aragora-verify prints for their copy.
+      # A second, independent anchor: GitHub records the digest at emission
+      # time in the run summary.
       - name: Record the receipt digest in the run summary
         env:
           RECEIPT_DIGEST: ${{ steps.review.outputs.receipt-digest }}
           RECEIPT_VERDICT: ${{ steps.review.outputs.receipt-verdict }}
+          RECEIPT_KEY_ID: ${{ steps.review.outputs.receipt-key-id }}
         run: |
           {
             echo "### Decision receipt"
@@ -70,6 +72,7 @@ jobs:
             echo "|---|---|"
             echo "| Verdict | \`${RECEIPT_VERDICT}\` |"
             echo "| odr_digest | \`${RECEIPT_DIGEST}\` |"
+            echo "| Signing key | \`${RECEIPT_KEY_ID}\` |"
             echo ""
-            echo "Download the artifact, run \`aragora-verify decision-receipt.odr.json\`, and check that the printed \`odr_digest\` matches the one above."
+            echo "Download the artifact and run \`aragora-verify decision-receipt.odr.json --pubkey odr-signing-key.pub.pem\` with the public key from this repository."
           } >> "$GITHUB_STEP_SUMMARY"

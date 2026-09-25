@@ -20,22 +20,24 @@ You need Python 3.10 or newer and about 60 seconds.
    ```bash
    python3 -m pip install "aragora-verify>=0.2.0"
    ```
-3. Verify:
+3. Verify the receipt against this repository's public key, [`odr-signing-key.pub.pem`](odr-signing-key.pub.pem):
    ```bash
-   aragora-verify decision-receipt.odr.json
+   aragora-verify decision-receipt.odr.json --pubkey odr-signing-key.pub.pem
    ```
-   Exit code `0` means the structural checks passed.
-4. Compare the `odr_digest` that the verifier prints with the `odr_digest` in the check run's **Summary** tab. GitHub recorded that value when the receipt was created. If the two differ, your copy has been changed.
+   Exit code `0` means the signature, content digest, schema and quorum checks all passed.
+4. To see tamper detection, edit the `verdict` in a copy of the file and verify the copy the same way. It fails the `signature` check (exit code `1`).
 
-## What these receipts do and don't prove
+## What these receipts prove
 
-- **The verifier checks structure.** The document conforms to the ODR schema, and every agent listed as supporting or dissenting is a declared participant.
-- **The digest comparison checks that your copy is unchanged.** Receipts from this demo are **unsigned**, because the Action doesn't take a signing key yet. For an unsigned receipt, the verifier recomputes the digest from whatever file you give it, so an edited copy still passes step 3. Step 4 catches the edit, because the recorded digest lives in GitHub's run summary rather than in the file.
-- **They don't prove who produced them** beyond "this repository's workflow run". Signed receipts carry an Ed25519 signature and are verified with `aragora-verify <file> --pubkey <key.pem>`, which catches any edit on its own. Examples are attached to the [`receipts-*` releases](https://github.com/synaptent/aragora/releases) of the main repository.
+- **Who produced them.** Each receipt carries an Ed25519 signature from this repository's signing key. The private half is a GitHub secret; the public half is committed here, so anyone can check it offline.
+- **That your copy is unaltered.** Any edit to the signed content fails verification.
+- **What was decided and who dissented.** The verifier also checks the schema and that every agent listed as supporting or dissenting is a declared participant.
+
+The check run's **Summary** tab also records each receipt's digest and signing key id at the moment it was created.
 
 ## Use it in your own repository
 
-Copy `.github/workflows/aragora-receipt.yml` and add two repository secrets: `ANTHROPIC_API_KEY` and `OPENAI_API_KEY`. Each pull request calls both providers, so it costs money on both accounts. Pull requests from forks don't receive secrets, so the review is skipped for them.
+Copy `.github/workflows/aragora-receipt.yml` and add three repository secrets: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, and `ARAGORA_ODR_SIGNING_KEY` (an Ed25519 private key from `openssl genpkey -algorithm ed25519`). Commit the matching public key so others can verify your receipts. Each pull request calls both providers, so it costs money on both accounts. Pull requests from forks don't receive secrets, so the review is skipped for them.
 
 The full setup guide is [docs/GITHUB_ACTION_SETUP.md](https://github.com/synaptent/aragora/blob/main/docs/GITHUB_ACTION_SETUP.md). The receipt format is specified in [docs/specs/OPEN_DECISION_RECEIPT.md](https://github.com/synaptent/aragora/blob/main/docs/specs/OPEN_DECISION_RECEIPT.md).
 
