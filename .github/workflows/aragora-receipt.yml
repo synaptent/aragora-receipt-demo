@@ -1,0 +1,75 @@
+# Every pull request gets an Aragora multi-model review and a portable
+# Open Decision Receipt (ODR). The receipt is uploaded as a build artifact and
+# re-verified offline with the standalone `aragora-verify` package, which
+# shares no code path with the reviewer that produced it.
+
+name: Aragora decision receipt
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: aragora-receipt-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: Review and emit receipt
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Aragora review
+        id: review
+        uses: synaptent/aragora@44ac78ad311785ecaa91b3fe56c7c7c613af92d9
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          post-comment: 'true'
+          emit-receipt: 'true'
+          receipt-reviewers: 'claude openai'
+
+      - name: Fail if no receipt was produced
+        if: steps.review.outputs.receipt-verified != 'true'
+        run: |
+          echo "::error::No verified decision receipt was produced. Check that the ANTHROPIC_API_KEY and OPENAI_API_KEY repository secrets are set."
+          exit 1
+
+      - name: Upload the decision receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-receipt-pr-${{ github.event.pull_request.number }}
+          path: ${{ steps.review.outputs.receipt-path }}
+
+      - name: Verify the receipt with the standalone verifier
+        env:
+          RECEIPT_PATH: ${{ steps.review.outputs.receipt-path }}
+        run: |
+          python3 -m pip install --quiet "aragora-verify>=0.2.0"
+          aragora-verify "$RECEIPT_PATH"
+
+      # These demo receipts are unsigned, so a recomputed digest alone cannot
+      # show that a downloaded copy is unaltered. Record the digest in the
+      # GitHub-hosted run summary at emission time so anyone can compare it
+      # with the odr_digest that aragora-verify prints for their copy.
+      - name: Record the receipt digest in the run summary
+        env:
+          RECEIPT_DIGEST: ${{ steps.review.outputs.receipt-digest }}
+          RECEIPT_VERDICT: ${{ steps.review.outputs.receipt-verdict }}
+        run: |
+          {
+            echo "### Decision receipt"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Verdict | \`${RECEIPT_VERDICT}\` |"
+            echo "| odr_digest | \`${RECEIPT_DIGEST}\` |"
+            echo ""
+            echo "Download the artifact, run \`aragora-verify decision-receipt.odr.json\`, and check that the printed \`odr_digest\` matches the one above."
+          } >> "$GITHUB_STEP_SUMMARY"
