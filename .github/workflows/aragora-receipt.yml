@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Aragora review
         id: review
-        uses: synaptent/aragora@1837e4b3cf26bd5f4a8acafded3e05475dcb0c6d
+        uses: synaptent/aragora@08e6e68374cbc0a3584bcacfb3db08b829af40d8
         with:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}

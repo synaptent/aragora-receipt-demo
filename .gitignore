@@ -3,3 +3,5 @@ __pycache__/
 .pytest_cache/
 .venv/
 *.odr.json
+# Curated sample receipts are committed on purpose.
+!receipts/*.odr.json

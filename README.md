@@ -27,6 +27,16 @@ You need Python 3.10 or newer and about 60 seconds.
    Exit code `0` means the signature, content digest, schema and quorum checks all passed.
 4. To see tamper detection, edit the `verdict` in a copy of the file and verify the copy the same way. It fails the `signature` check (exit code `1`).
 
+### A committed sample
+
+[`receipts/pr-1-5cf4f6ceca72.odr.json`](receipts/pr-1-5cf4f6ceca72.odr.json) is the receipt for pull request #1 at head `5cf4f6ce`. It records the real Claude and OpenAI reviews of that head: both passed, with two advisory `[P3]` notes from Claude. It is signed with this repository's key, so you can check it without downloading anything:
+
+```bash
+aragora-verify receipts/pr-1-5cf4f6ceca72.odr.json --pubkey odr-signing-key.pub.pem
+```
+
+Its verdict is `PASS`, and `attestation.mechanism.decision_basis` is `reviews`: the Action decides on the reviewer verdicts, since it never posts merge-gate evidence.
+
 ## What these receipts prove
 
 - **Who produced them.** Each receipt carries an Ed25519 signature from this repository's signing key. The private half is a GitHub secret; the public half is committed here, so anyone can check it offline.

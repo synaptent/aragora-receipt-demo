@@ -1,0 +1,156 @@
+{
+  "attestation": {
+    "disposition": "autonomous",
+    "mechanism": {
+      "action": "prepare",
+      "action_reason": "dry-run; re-run with --apply to post",
+      "decision_basis": "reviews",
+      "policy_version": 1,
+      "severity_gated": false,
+      "tier": 1,
+      "tiered_gate": false,
+      "type": "merge-quorum"
+    }
+  },
+  "claim": {
+    "statement": "Merge synaptent/aragora-receipt-demo#1 @ 5cf4f6ceca72",
+    "verdict": "PASS"
+  },
+  "confidence": {
+    "calibration": {
+      "provenance_ref": {
+        "receipt_id": "pr-1-5cf4f6ceca72",
+        "type": "aragora.settlement_metadata"
+      },
+      "status": "present"
+    },
+    "scale": "unit_interval",
+    "status": "present",
+    "value": 1.0
+  },
+  "cruxes": {
+    "reason": "no crux set recorded for this decision (DecisionReceipt does not carry one; supply crux_set= from a CruxReceipt)",
+    "status": "absent"
+  },
+  "issued_at": "2026-09-25T05:22:21Z",
+  "odr_version": "0.2",
+  "profile": "https://aragora.ai/specs/open-decision-receipt/v0.2",
+  "quorum": {
+    "dissent": {
+      "blocking": false,
+      "dissenting_agents": [],
+      "findings": [
+        {
+          "blocking": false,
+          "issuer": "claude",
+          "severity": "P3",
+          "text": "`src/demo/ratelimit.py:35` docstring still says the method \"report[s] whether the request may proceed\" but it now raises on an impossible cost instead of returning False. Callers that fed a dynamic cost and relied on the boolean contract get an exception; this is a deliberate contract change with no affected callers in this repo, but the docstring should document the raise."
+        },
+        {
+          "blocking": false,
+          "issuer": "claude",
+          "severity": "P3",
+          "text": "`tests/test_ratelimit.py:39` `pytest.raises(ValueError)` has no `match=`, so it cannot distinguish the new branch from the existing `cost must be positive` branch, and no test pins the boundary that `cost == capacity` is still accepted. I probed that boundary manually and it is allowed, but the suite would not catch a future off-by-one."
+        }
+      ],
+      "present": false,
+      "severity_max": "P3",
+      "views": []
+    },
+    "independence": {
+      "disclosed": true,
+      "distinct_model_families": 2,
+      "model_families": [
+        "anthropic",
+        "openai"
+      ]
+    },
+    "method": "merge-quorum",
+    "participants": [
+      {
+        "agent": "claude",
+        "model_family": "anthropic",
+        "model_id": "undisclosed"
+      },
+      {
+        "agent": "openai",
+        "model_family": "openai",
+        "model_id": "undisclosed"
+      }
+    ],
+    "reached": true,
+    "rule": {
+      "counted_families": [
+        "claude",
+        "openai"
+      ],
+      "required_signals": 2,
+      "requires_western_frontier": false,
+      "western_only_counted": false
+    },
+    "status": "present",
+    "supporting_agents": [
+      "claude",
+      "openai"
+    ],
+    "verdicts": [
+      {
+        "blocking": false,
+        "counted": true,
+        "grounded": true,
+        "head_sha": "5cf4f6ceca7248da868c8c0f969a852730f6f8f9",
+        "issuer": "claude",
+        "model_family": "anthropic",
+        "model_id": "undisclosed",
+        "verdict": "pass"
+      },
+      {
+        "blocking": false,
+        "counted": true,
+        "grounded": true,
+        "head_sha": "5cf4f6ceca7248da868c8c0f969a852730f6f8f9",
+        "issuer": "openai",
+        "model_family": "openai",
+        "model_id": "undisclosed",
+        "verdict": "pass"
+      }
+    ]
+  },
+  "reasoning": {
+    "status": "present",
+    "summary": "decided on reviewer verdicts (decision_basis=reviews): supportive ['claude', 'openai'], dissenting [], quorum rule satisfied; evidence action=prepare: dry-run; re-run with --apply to post"
+  },
+  "receipt_id": "pr-1-5cf4f6ceca72",
+  "routing": {
+    "status": "reserved"
+  },
+  "signatures": [
+    {
+      "alg": "Ed25519",
+      "issuer": "aragora",
+      "key_id": "ed25519-a50b2d9003fec811",
+      "role": "emitter",
+      "signature": "2sUqJFLJ2aa5Xd332lWk0mNQKL3lU9+Gj6+ABIAFKiKVZf0ZhWJmDPUW/i+P7SQysm4e6eqx8/dkFOW4CB96Bw==",
+      "signed_at": "2026-09-27T21:44:43+00:00"
+    }
+  ],
+  "source": {
+    "artifact_hash": "6fb6ec049c330fd1d7f586348383a92b98318b8aac441e50c931b8b2fb4a287b",
+    "receipt_id": "pr-1-5cf4f6ceca72",
+    "schema": "aragora.gauntlet.DecisionReceipt",
+    "schema_version": "1.1",
+    "system": "aragora"
+  },
+  "subject": {
+    "digest": {
+      "alg": "sha-256",
+      "status": "present",
+      "value": "ef4d862d09691aeaa179c265efa9cc3ab9a8eb3a26e746a95ff1ce7d7b5459ec"
+    },
+    "head_sha": "5cf4f6ceca7248da868c8c0f969a852730f6f8f9",
+    "identifier": "merge-quorum/synaptent/aragora-receipt-demo#1",
+    "pr_number": 1,
+    "repository": "synaptent/aragora-receipt-demo",
+    "summary": "Merge synaptent/aragora-receipt-demo#1 @ 5cf4f6ceca72"
+  }
+}
