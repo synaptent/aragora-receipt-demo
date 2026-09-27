@@ -34,3 +34,9 @@ def test_refill_never_exceeds_capacity() -> None:
 def test_rejects_invalid_configuration(kwargs: dict) -> None:
     with pytest.raises(ValueError):
         TokenBucket(**kwargs)
+
+
+def test_rejects_cost_above_capacity() -> None:
+    bucket = TokenBucket(capacity=2, rate=1.0, clock=FakeClock())
+    with pytest.raises(ValueError):
+        bucket.allow(cost=3)

@@ -35,6 +35,8 @@ class TokenBucket:
         """Spend ``cost`` tokens if available and report whether the request may proceed."""
         if cost <= 0:
             raise ValueError("cost must be positive")
+        if cost > self.capacity:
+            raise ValueError("cost exceeds bucket capacity and can never be satisfied")
         self._refill()
         if self._tokens >= cost:
             self._tokens -= cost
