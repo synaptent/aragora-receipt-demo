@@ -1,0 +1,4 @@
+# Tools for running the tests and checking receipts locally.
+# The rate limiter in src/demo uses only the standard library.
+pytest>=8
+aragora-verify>=0.2.0
